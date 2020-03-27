@@ -37,6 +37,15 @@ def retrieve_data(table_name, column = '*'):
     #1. Retrieve a list of data from the specified table name and column
     #2. Return the list of object
 
+def update_info():
+    pass
+    #Ask user which info they like to change
+        #1. Name
+        #2. birthdate
+        #3. location
+
+    #Update the information in the database
+
 #Parameter: list of Request() object
 def print_request(request):
     pass
@@ -52,41 +61,32 @@ def print_request(request):
 """Search/Sort Algorithm"""
 #Note: The algorithm does not have to be fast
 
-#Parameter: list
-#Return type: list
+#Parameter: list of objects
+#Return type: list of objects
 def search_for_location(request_list):
     pass
 
-#Parameter: list
-#Return type: list
+#Parameter: list of objects
+#Return type: list of objects
 def sort_by_dealine(request_list):
     pass
 
-#Parameter: list
-#Return type: list
+#Parameter: list of objects
+#Return type: list of objects
 def search_for_keyword(request_list):
     pass
 
-#Parameter: list
-#Return type: list
+#Parameter: list of objects
+#Return type: list of objects
 def sort_by_points(user_list):
     pass
 """"""
 
 
 """Other features"""
-def update_info():
-    pass
-    #Ask user which info they like to change
-        #1. Name
-        #2. birthdate
-        #3. location
-
-    #Update the information in the database
-
 def check_current_request():
     pass
-    #Get a list of request that the user has picked
+    #Get a list of request that the user has picked --> Retrieve data()
     #Print out all the request --> print_request(request_list)
 
 #Parameter: User() object
@@ -127,7 +127,7 @@ def contribute_board():
     #Get data from database --> request_list = retrieve_data(table_name, column)
 
     #Let user choose how they want to look for request
-        #1. Same location --> search_for_location(request_list)
+        #1. Same location to where they live --> search_for_location(request_list)
         #2. How close the deadline is --> sort_by_dealine(request_list)
         #3. Look for keyword --> search_for_keyword(request_list)
 
