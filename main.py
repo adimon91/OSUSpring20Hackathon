@@ -4,10 +4,10 @@ from user_and_request import User, Request
 conn = sqlite3.connect("database.db")
 c = conn.cursor()
 
-"""Global Function"""
-# this function is to generate the request and user id's, it takes a letter as an argument - either "U" for user or "R" for request
+
 
 """Data Handling"""
+#Description: Create database table
 def create_table():
     c.execute("""CREATE TABLE user_table (
              userid text PRIMARY KEY,
@@ -28,7 +28,9 @@ def create_table():
 
     conn.commit()
 
-#Create user table
+"""User table"""
+#Description: Store user into a table
+#Parameter: User object
 def store_user(user):
   c.execute("INSERT INTO user_table VALUES (:user_id, :name, :birthdate, :location, :contribution_pt)", {
             'user_id': user._user_id,
@@ -39,7 +41,9 @@ def store_user(user):
     
   conn.commit()
     
-def retrieve_users():
+#Description: Get top 10 users in the order of contribution_point
+#Return type: list of User object
+def retrieve_users_by_points():
     c.execute("SELECT * FROM user_table ORDER BY contribution_pt DESC")
     user_list = []
     users = c.fetchmany(10)
@@ -49,6 +53,9 @@ def retrieve_users():
 
     return user_list
 
+#Description: Get the user object based given their userID
+#Parameter: string
+#Return type: User object
 def retrieve_user_from_id(ID):
   if(ID[0] == 'U'):
     c.execute("SELECT * FROM user_table WHERE userid = ?", (str(ID),))
@@ -60,38 +67,8 @@ def retrieve_user_from_id(ID):
     return User(user[1], user[2], user[3], user[4], user[0])
   else:
     return None
-  
-def store_request(request):
-    c.execute("INSERT INTO request_table VALUES (:request_id, :subject, :post_detail, :claimed_by, :requested_by, :completed)",
-    {'request_id': request._request_id, 
-     'subject': request._subject,
-     'post_detail': request._post_detail,
-     'claimed_by': "False",
-     'requested_by': request._requested_by._user_id,
-     'completed': "False"})
-    
-    conn.commit()
-  
-def retrieve_available_requests():
-    c.execute("SELECT * FROM request_table WHERE claimed_by = ?", ("False",))
-    request_list = c.fetchmany(10)
-    list_of_object = []
-    for i in range(len(request_list)):
-        request_by = retrieve_user_from_id(request_list[i][2])
-        if (request_list[i][3] != None):
-            claimed_user = retrieve_user_from_id(request_list[i][3])
-        else:
-            claimed_user = None
-        list_of_object.append(Request(request_list[i][1], request_list[i][2], request_by, request_list[i][0], claimed_user, request_list[i][5]))
 
-    return list_of_object
-    
-def claim_request(request):
-    c.execute("""UPDATE request_table
-                SET claimed_by = ?
-                WHERE request_id = ?""", (request._claimed_by, request._request_id))
-    conn.commit()  
-    
+#Description: Update user info in the database
 def update_info(user, option, new_info):
     if (option == 1):
         c.execute("""UPDATE user_table
@@ -106,7 +83,32 @@ def update_info(user, option, new_info):
                     SET location = ?
                     WHERE userid = ?""", (new_info, user._user_id))
     conn.commit()  
+""""""
 
+"""Request table"""
+#Description: Store request in database
+#Parameter: Request object
+def store_request(request):
+    c.execute("INSERT INTO request_table VALUES (:request_id, :subject, :post_detail, :claimed_by, :requested_by, :completed)",
+    {'request_id': request._request_id, 
+     'subject': request._subject,
+     'post_detail': request._post_detail,
+     'claimed_by': "False",
+     'requested_by': request._requested_by._user_id,
+     'completed': "False"})
+    
+    conn.commit()
+
+#Description: Set the user who claimed the request
+#Parameter: Request object
+def claim_request(request):
+    c.execute("""UPDATE request_table
+                SET claimed_by = ?
+                WHERE request_id = ?""", (request._claimed_by, request._request_id))
+    conn.commit()  
+    
+#Description: Set request as completed, add points to user
+#Parameter: Request object, User object
 def check_off_request(request, user):
     c.execute("""UPDATE request_table
                 SET completed = ?
@@ -116,96 +118,75 @@ def check_off_request(request, user):
                 WHERE userid = ?""", (user._contribution_pt, user._user_id))
     conn.commit()  
 
+#Description: Take a list of tuple and convert it to a list of Request object
+#Parameter: A list of tuple
+#Return type: A list of Request object
+def convert_to_list_of_object(request_list):
+    list_of_object = []
+    for i in range(len(request_list)):
+        request_by = retrieve_user_from_id(request_list[i][2])
+        if (request_list[i][3] != None):
+            claimed_user = retrieve_user_from_id(request_list[i][3])
+        else:
+            claimed_user = None
+        list_of_object.append(Request(request_list[i][1], request_list[i][2], request_by, request_list[i][0], claimed_user, request_list[i][5]))
+
+    return list_of_object
+
+#Description: Retrieve requests that have not been claimed yet
+#Return type: A list of Request object
+def retrieve_available_requests():
+    c.execute("SELECT * FROM request_table WHERE claimed_by = ?", ("False",))
+    request_list = c.fetchmany(10)
+    list_of_object = convert_to_list_of_object(request_list)
+
+    return list_of_object
+
+#Description: Retrieve requests that is claimed by the user but is not yet completed
+#Parameter: User object
+#Return type: A list of Request object
 def retrieve_claimed_request(user):
     c.execute("SELECT * FROM request_table WHERE claimed_by = ? AND completed = ?", (user._user_id, "False"))
     request_list = c.fetchall()
-    list_of_object = []
-    for i in range(len(request_list)):
-        request_by = retrieve_user_from_id(request_list[i][2])
-        if (request_list[i][3] != None):
-            claimed_user = retrieve_user_from_id(request_list[i][3])
-        else:
-            claimed_user = None
-        list_of_object.append(Request(request_list[i][1], request_list[i][2], request_by, request_list[i][0], claimed_user, request_list[i][5]))
+    list_of_object = convert_to_list_of_object(request_list)
 
     return list_of_object
 
+#Description: Retrieve requests that is claimed by the user
+#Parameter: User object
+#Return type: A list of Request object
 def retrieve_claimed_request(user):
     c.execute("SELECT * FROM request_table WHERE claimed_by = ?", (user._user_id, ))
     request_list = c.fetchall()
-    list_of_object = []
-    for i in range(len(request_list)):
-        request_by = retrieve_user_from_id(request_list[i][2])
-        if (request_list[i][3] != None):
-            claimed_user = retrieve_user_from_id(request_list[i][3])
-        else:
-            claimed_user = None
-        list_of_object.append(Request(request_list[i][1], request_list[i][2], request_by, request_list[i][0], claimed_user, request_list[i][5]))
+    list_of_object = convert_to_list_of_object(request_list)
 
     return list_of_object
 
+#Description: Retrieve requests that is posted by the user
+#Parameter: User object
+#Return type: A list of Request object
 def retrieve_submitted_request(user):
     c.execute("SELECT * FROM request_table WHERE requested_by = ?", (user._user_id,))
     request_list = c.fetchall()
-    list_of_object = []
-    for i in range(len(request_list)):
-        request_by = retrieve_user_from_id(request_list[i][2])
-        if (request_list[i][3] != None):
-            claimed_user = retrieve_user_from_id(request_list[i][3])
-        else:
-            claimed_user = None
-        list_of_object.append(Request(request_list[i][1], request_list[i][2], request_by, request_list[i][0], claimed_user, request_list[i][5]))
+    list_of_object = convert_to_list_of_object(request_list)
 
     return list_of_object
-""""""
 
-"""Search/Sort Algorithm"""
-#Note: The algorithm does not have to be fast
-#Parameter: list of objects
-#Return type: list of objects
-def search_for_location(request_list):
-    pass
-#Parameter: list of objects
-#Return type: list of objects
-def sort_by_deadline(request_list):
-    pass
-#Parameter: list of objects
-#Return type: list of objects
+#Description: Retrieve requests that matches the keyword
+#Parameter: string
+#Return type: A list of Request object
 def search_for_keyword(keyword):
     c.execute("SELECT * FROM request_table WHERE claimed_by = ? AND (post_detail LIKE ? OR subject LIKE ?)", ("False", '%{}%'.format(keyword), '%{}%'.format(keyword)))
     request_list = c.fetchall()
-    list_of_object = []
-    for i in range(len(request_list)):
-        request_by = retrieve_user_from_id(request_list[i][2])
-        if (request_list[i][3] != None):
-            claimed_user = retrieve_user_from_id(request_list[i][3])
-        else:
-            claimed_user = None
-        list_of_object.append(Request(request_list[i][1], request_list[i][2], request_by, request_list[i][0], claimed_user, request_list[i][5]))
+    list_of_object = convert_to_list_of_object(request_list)
 
     return list_of_object
-  
-#Parameter: list of objects
-#Return type: list of objects
-def search_for_subject(request_list):
-    pass
-  
-#Parameter: list of objects
-#Return type: list of objects
-def sort_by_points(user_list):
-    pass
-
-#def show_all_unclaimed_request():
-
 """"""
+"""End of data handling"""
+
+
 
 """Other features"""
-def check_current_request():
-    pass
-    #Get a list of request that the user has picked --> Retrieve data()
-    #Print out all the request --> print_request(request_list)
-  	#Parameter: User() object
-
 def account_management(user):
     while True:
         print("\nUser information")
@@ -267,26 +248,23 @@ def account_management(user):
         else:
             print("Invalid Input.\n")
 
-    #Print user information:
-        #Name, birthdate, location
-        #Contribution point
-    #Ask if they want to:
-        #1. Edit info --> update_info
-        #2. Check current requests --> check_request()
-        #3. Go back to homepage
 #Parameter: User() object
 def check_leaderboard(user):
-    user_list = retrieve_users()
+    #Retrieve users, sorted by contribution points
+    user_list = retrieve_users_by_points()
 
+    #Print out top 10 users
     for i in range(len(user_list)):
         print("{}. {} with {} points".format(i + 1, user_list[i]._name, user_list[i]._contribution_pt))
-    #request_list = 
-    #Retrieve all of users' name and their points --> retrieve_data(user_table, 'name, points')
-    #Reorder the list by the points --> sort_by_points()
-    #Print out top 10 users in the leaderboard and the placement of the current user 
+
+    print("")
 """"""
 
+
+
 """Request and Contribute"""
+#Description: Let the user post a request
+#Parameter: User object
 def request_board(user):
     print("Welcome to the request board! Enter the following information and your request will be posted.")
     
@@ -296,8 +274,9 @@ def request_board(user):
     request = Request(subject, detail, user)
     store_request(request)
 
-
-
+#Description: Let the user claim a request or check of a request
+#Parameter: User object
+#Return type: Void
 def contribute_board(user):
     option = int(input("Would you like to 1.Claim an open request 2.Checkoff completed request: "))
     if (option == 1):
@@ -351,6 +330,7 @@ def contribute_board(user):
                 print("{}. {}".format(request_index + 1, request._subject))
                 print("Request ID: {}".format(request._request_id))
                 print(request._post_detail)
+            print("")
         else:
             print("Seems like you haven't picked up any request yet. Feel free to help someone out!")
             return
@@ -376,7 +356,10 @@ def contribute_board(user):
         contribute_board(user)
 """"""
 
+
+
 """Register and Login"""
+#Description: Let the user register, store info in database
 #Return type: User() object
 def register():
     print("Thank you for registering! Please enter the following information:")
@@ -385,25 +368,21 @@ def register():
     name = input("Name: ")
     birthdate = input("Birthdate: ")
     location = input("Address: ")
-    
-    #Raise TypeError if user inputs invalid type for any attribute
-        #Reprompt user to enter information again
       
     #Instantiate new object and store the information --> User(name, birthdate, location)
     current_user = User(name, birthdate, location)
     #Store user information in json/database --> store_data(user)
     store_user(current_user)
-    #Return user
-	#Return type: User() object
+
     return current_user
-    
+
+#Description: Prompt user for login ID, return all the user information
+#Return type: User() object or None   
 def login():
     userID = input("Please enter your UserID: ")
     userID = userID.upper()
-    #Raise TypeError if user inputs invalid type for any attribute
-    	#Reprompt user to enter information again
     
-    #Get data from database --> retrieve_data() this will return a list of user object, find the object with the same id
+    #Find user in database with the given ID
     user = retrieve_user_from_id(userID)
     
     if user != None:
@@ -413,6 +392,8 @@ def login():
     	return None
     
 """"""
+
+
 
 """Main and Exit Program"""
 def exit_program():
@@ -448,7 +429,7 @@ def main():
       
       if (menu_option == 1):
         request_board(current_user)
-        print("\nThank you for posting your request. Someone will pick it up soon!")
+        print("\nThank you for posting your request. Someone will pick it up soon!\n")
       elif (menu_option == 2):
         contribute_board(current_user)
       elif (menu_option == 3):
@@ -472,3 +453,4 @@ if __name__ == '__main__':
     main()
     conn.commit()
     conn.close()  
+""""""
