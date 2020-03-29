@@ -127,6 +127,7 @@ def contribute_board(user):
                 return
                 
             request_id = input("Enter request ID to pick up task or '0' to quit: ")
+            request_id = request_id.upper()
             
             if (request_id == "0"):
               break
@@ -151,6 +152,7 @@ def contribute_board(user):
             return
 
         claimed_id = input("Enter request ID to check off task or '0' to quit: ")
+        claimed_id = claimed_id.upper()
 
         if (claimed_id == "0"):
             return
