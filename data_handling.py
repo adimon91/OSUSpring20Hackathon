@@ -1,13 +1,13 @@
 import sqlite3
 from Classes import User, Request
 
-conn = sqlite3.connect("database.db")
+conn = sqlite3.connect("sqlite.db")
 c = conn.cursor()
 
 """Data Handling"""
 #Description: Create database table
 def create_table():
-    c.execute("""CREATE TABLE user_table (
+    c.execute("""CREATE TABLE IF NOT EXISTS user_table (
              userid text PRIMARY KEY,
              name text,
              birthdate text,
@@ -15,7 +15,7 @@ def create_table():
              contribution_pt integer
              )""")
 
-    c.execute("""CREATE TABLE request_table (
+    c.execute("""CREATE TABLE IF NOT EXISTS request_table (
              request_id text,
              subject text,
              post_detail text,
@@ -44,7 +44,7 @@ def store_user(user):
 def retrieve_users_by_points():
     c.execute("SELECT * FROM user_table ORDER BY contribution_pt DESC")
     user_list = []
-    users = c.fetchmany(10)
+    users = c.fetchall()
 
     for i in range(len(users)):
         user_list.append(User(users[i][1], users[i][2], users[i][3], users[i][4], users[i][0]))
