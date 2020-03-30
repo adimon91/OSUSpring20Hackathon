@@ -68,10 +68,20 @@ def account_management(user):
 def check_leaderboard(user):
     #Retrieve users, sorted by contribution points
     user_list = db.retrieve_users_by_points()
+    print("")
 
     #Print out top 10 users
+    j = 0
     for i in range(len(user_list)):
-        print("{}. {} with {} points".format(i + 1, user_list[i]._name, user_list[i]._contribution_pt))
+        if (i < 10):
+            print("{}. {} with {} points".format(i + 1, user_list[i]._name, user_list[i]._contribution_pt))
+        if (user_list[i]._user_id == user._user_id):
+            j = i
+
+    print("\n{}".format(user._name))
+    print("Placement: {}".format(str(j+1)))
+    print("Contribution points: {}".format(user._contribution_pt))
+        
 
     print("")
 """"""
@@ -266,7 +276,7 @@ def main():
         print("\nInvalid input.\n")
             
 if __name__ == '__main__':
-    #db.create_table()
+    db.create_table()
     main()
     db.conn.commit()
     db.conn.close()  
