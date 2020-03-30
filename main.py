@@ -171,13 +171,13 @@ def contribute_board(user):
               request = request_list[request_index]
               if (request._request_id == claimed_id):
                 request._status = "True"
-                user._contribution_pt += 100
+                user._contribution_pt += 1
                 db.check_off_request(request, user) #Update database
-                print("\nWell Done! You earned 100 points!")
+                print("\nWell Done! You earned 100 points!\n")
                 return
-            print("Request not found.")
+            print("\nRequest not found.\n")
         else:
-            print("Invalid input.")
+            print("\nInvalid input.\n")
     else:
         print("Invalid input.")
         contribute_board(user)
