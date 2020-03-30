@@ -3,7 +3,7 @@ from random import randint
 def gen_rand_num(id_type):
     user_id = id_type.upper()
     # generate some integers
-    for _ in range(6):
+    for _ in range(4):
         value = randint(0, 10)
         user_id += str(value)
     return user_id
