@@ -175,9 +175,9 @@ def contribute_board(user):
                 db.check_off_request(request, user) #Update database
                 print("\nWell done! You earned a contribution point!")
                 return
-            print("Request not found.")
+            print("\nRequest not found.\n")
         else:
-            print("Invalid input.")
+            print("\nInvalid input.\n")
     else:
         print("Invalid input.")
         contribute_board(user)
