@@ -8,13 +8,13 @@ def account_management(user):
         print("\nUser information")
         print("Name: {}".format(user._name))
         print("Date of Birth: {}".format(user._birthdate))
-        print("Adress: {}\n".format(user._location))
+        print("Address: {}\n".format(user._location))
 
         choice = int(input("Would you like to 1.Update your info 2.Check submitted request 3.Check claimed request 4.Quit: "))
         print("")
 
         if (choice == 1):
-            change_info = int(input("Which information would you like to change? 1.Name 2.DOB 3.Adress 4.Quit: "))
+            change_info = int(input("Which information would you like to change? 1.Name 2.DOB 3.Address 4.Quit: "))
             print("")
 
             if (change_info == 1):
@@ -173,7 +173,7 @@ def contribute_board(user):
                 request._status = "True"
                 user._contribution_pt += 1
                 db.check_off_request(request, user) #Update database
-                print("\nWell Done! You earned 100 points!\n")
+                print("\nWell done! You earned a contribution point!")
                 return
             print("\nRequest not found.\n")
         else:
