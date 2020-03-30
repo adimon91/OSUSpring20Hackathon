@@ -175,7 +175,7 @@ def contribute_board(user):
                 db.check_off_request(request, user) #Update database
                 print("\nWell Done! You earned 100 points!")
                 return
-            print("Request not found.")
+            print("\nRequest not found.\n")
         else:
             print("Invalid input.")
     else:
@@ -215,7 +215,7 @@ def login():
     if user != None:
     	return user
     else:
-    	print("User not found. Did you type in the right ID?")
+    	print("\nUser not found. Did you type in the right ID?\n")
     	return None
     
 """"""
